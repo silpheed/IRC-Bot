@@ -21,7 +21,8 @@ namespace Bot
 							new Rainbow(_irc),
 							new Big(_irc),
 							new Puppet(_irc),
-							new LOTD(_irc)
+							new LOTD(_irc),
+							new EightBall(_irc)
 			           	};
 
 			_irc.OnReadLine += OnReadLine;

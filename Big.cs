@@ -28,10 +28,10 @@ namespace Bot
 				return true;
 
 			if ((data.MessageArray[0] == "!big") || (data.MessageArray[0] == "!b"))
-				Embiggen(data.Message.Split(null, 2)[1], false, data.Channel, data.Host);
+				Embiggen(data.Message.Split(null, 2)[1], false, data.Channel, data.Ident, data.Host);
 
 			if ((data.MessageArray[0] == "!bigrainbow") || (data.MessageArray[0] == "!br"))
-				Embiggen(data.Message.Split(null, 2)[1], true, data.Channel, data.Host);
+				Embiggen(data.Message.Split(null, 2)[1], true, data.Channel, data.Ident, data.Host);
 
 			return true;
 		}
@@ -40,14 +40,16 @@ namespace Bot
 		{
 		}
 
-		private bool IsAllowed(string host)
+		private bool IsAllowed(string ident, string host)
 		{
-			if (!_userLimit.ContainsKey(host)) {
-				_userLimit.Add(host, DateTime.Now);
+			string key = ident + "@" + host;
+
+			if (!_userLimit.ContainsKey(key)) {
+				_userLimit.Add(key, DateTime.Now);
 				return true;
 			}
-			if (DateTime.Now - _userLimit[host] >= new TimeSpan(0, _timeLimitMinutes, 0)) {
-				_userLimit[host] = DateTime.Now;
+			if (DateTime.Now - _userLimit[key] >= new TimeSpan(0, _timeLimitMinutes, 0)) {
+				_userLimit[key] = DateTime.Now;
 				return true;
 			}
 
@@ -60,9 +62,9 @@ namespace Bot
 			_irc.SendMessage(SendType.Message, data.Nick, "04!bigrainbow <text> or 04!br <text> fabulise your big <text>.");
 		}
 
-		private void Embiggen(string input, bool isRainbow, string channel, string host)
+		private void Embiggen(string input, bool isRainbow, string channel, string ident, string host)
 		{
-			if ((input.Length > 55) || (!IsAllowed(host))) {
+			if ((input.Length > 55) || (!IsAllowed(ident, host))) {
 				_irc.SendMessage(SendType.Message, channel, "no");
 				return;
 			}

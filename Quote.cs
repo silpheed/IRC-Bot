@@ -31,7 +31,7 @@ namespace Bot
 		//8. popularity - DONE
 		//9. multiline submission
 		//10. browse by text (random quote with search term in it) - DONE
-		//11. multiple person deletion - TEST THIS
+		//11. multiple person deletion - DONE
 
 		public Quote(IrcClient irc)
 		{
@@ -198,10 +198,13 @@ namespace Bot
 
 		private void SearchQuote(IrcMessageData data, bool random)
 		{
+			if (data.MessageArray.Length < 2)
+				return;
+
 			IList<QuoteData> results = _quotes;
 			IEnumerable<string> searchWords = data.MessageArray.Skip(1);
 			
-			results = results.Where(qd => searchWords.All(s => qd.Quote.Contains(s))).ToList();
+			results = results.Where(qd => searchWords.All(s => qd.Quote.ToLower().Contains(s.ToLower()))).ToList();
 			
 			if ((results.Count > 5) && (!random)) {
 				_irc.SendMessage(SendType.Message, data.Nick, String.Format("More than 5 results returned for 04{0}. Please be more specific.", data.Message.Split(null, 2)[1]));

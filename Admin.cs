@@ -7,6 +7,7 @@ namespace Bot
 	public class Admin : IBottable
 	{
 		private IrcClient _irc;
+		/*
 		//Change these to meet your own requirements.
 		private string _server = "irc.server.com";
 		private int _port = 6667;
@@ -15,7 +16,15 @@ namespace Bot
 		private string _botemail = "Mr@Bot.com";
 		//Admin user's nick + password, SHA1 hashed. See IsAuth() to make your own.
 		private string _saltedhash = "HASH_HERE";
-	
+		*/
+
+		private string _server = "irc.kippage.com";
+		private int _port = 6667;
+		internal static string _channel = "#kippage";
+		private string _botname = "banus";
+		private string _botemail = "banus";
+		private string _saltedhash = "86AC600F9C30B24FC9946FD085FEE32679CC0529";
+
 		private bool _autojoin = false;
 
 		public Admin(IrcClient irc)

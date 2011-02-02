@@ -44,10 +44,10 @@ namespace Bot
 				return;
 
 			int colNum = 0;
-			
+			string input = data.Message.Split(null, 2)[1].Replace("", String.Empty);
 			StringBuilder output = new StringBuilder();
 
-			foreach (char c in data.Message.Split(null, 2)[1]) {
+			foreach (char c in input) {
 				if (c == ' ') {
 					output.Append(c);
 					continue;
