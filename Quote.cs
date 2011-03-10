@@ -19,6 +19,7 @@ namespace Bot
 		private static int _maxMultilineOut = 10;
 		private int _deleteRequestPeriodInSecs = 10;
 		private IDictionary<int, DeleteRequest> _deleteRequests = new Dictionary<int, DeleteRequest>();
+		private IList<int> _last20QuoteIds;
 
 		//todo
 		//1. search by index - DONE
@@ -39,6 +40,7 @@ namespace Bot
 			_store = new QuoteStore(_storeFileName);
 			_quotes = _store.Load();
 			_rng = new Random((int)DateTime.Now.Ticks);
+			_last20QuoteIds = new List<int>();
 		}
 
 		public bool OnReadLine(IrcMessageData data)
@@ -101,7 +103,7 @@ namespace Bot
 			QuoteData qd;
 			if ((data.MessageArray.Length == 2) && (int.TryParse(data.MessageArray[1], out index))) {
 				//find
-				qd = _quotes.Where(x => x.Id == index).FirstOrDefault();
+				qd = _quotes.FirstOrDefault(x => x.Id == index);
 				//not found
 				if (null == qd) {
 					_irc.SendMessage(SendType.Message, data.Channel, String.Format("Quote 04{0} does not exist.", index));
@@ -150,9 +152,10 @@ namespace Bot
 			QuoteData qd;
 			if ((data.MessageArray.Length == 2) && (int.TryParse(data.MessageArray[1], out index))) {
 				//find
-				qd = _quotes.Where(x => x.Id == index).FirstOrDefault();
+				qd = _quotes.FirstOrDefault(x => x.Id == index);
 				//not found
-				if (null == qd) {
+				if (null == qd)
+				{
 					_irc.SendMessage(SendType.Message, data.Channel, String.Format("Quote 04{0} does not exist.", index));
 					return;
 				}
@@ -162,7 +165,8 @@ namespace Bot
 			}
 			//true random
 			else if ((data.MessageArray.Length == 1))
-				qd = _quotes[_rng.Next(_quotes.Count)];
+				qd = GetRandomQuote();
+
 			//random containing search term
 			else {
 				SearchQuote(data, true);
@@ -170,6 +174,40 @@ namespace Bot
 			}
 
 			DisplayQuote(data.Channel, qd, null);
+		}
+		
+		//out of all
+		private QuoteData GetRandomQuote()
+		{
+			return GetRandomQuote(null);
+		}
+
+		//out of a list
+		private QuoteData GetRandomQuote(IEnumerable<int> outOfThese)
+		{
+			if (null == outOfThese)
+				outOfThese = _quotes.Select(x => x.Id);
+
+			IList<int> possibilities = outOfThese.Except(_last20QuoteIds).ToList();
+			if ((null == possibilities) || (possibilities.Count == 0)) {
+				_last20QuoteIds = _last20QuoteIds.Except(outOfThese).ToList();
+				possibilities = outOfThese.ToList();
+			}
+
+			int randId = possibilities[_rng.Next(possibilities.Count)];
+
+			AddIdToLast20(randId);
+			return _quotes.FirstOrDefault(x => x.Id == randId);
+		}
+
+		private void AddIdToLast20(int id)
+		{
+			if (_last20QuoteIds.Contains(id))
+				return;
+
+			_last20QuoteIds.Insert(0, id);
+			while (_last20QuoteIds.Count > 20)
+				_last20QuoteIds.RemoveAt(20);
 		}
 
 		private void DisplayQuote(string target, QuoteData quote, string header)
@@ -206,8 +244,8 @@ namespace Bot
 			
 			results = results.Where(qd => searchWords.All(s => qd.Quote.ToLower().Contains(s.ToLower()))).ToList();
 			
-			if ((results.Count > 5) && (!random)) {
-				_irc.SendMessage(SendType.Message, data.Nick, String.Format("More than 5 results returned for 04{0}. Please be more specific.", data.Message.Split(null, 2)[1]));
+			if ((results.Count > 10) && (!random)) {
+				_irc.SendMessage(SendType.Message, data.Nick, String.Format("More than 10 results returned for 04{0}. Please be more specific.", data.Message.Split(null, 2)[1]));
 				return;
 			}
 			if (results.Count == 0) {
@@ -216,7 +254,7 @@ namespace Bot
 			}
 
 			if (random) {
-				QuoteData qd = results[_rng.Next(0, results.Count)];
+				QuoteData qd = GetRandomQuote(results.Select(x => x.Id));
 				DisplayQuote(data.Channel, qd, null);
 			}
 			else
