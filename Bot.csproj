@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Big.cs" />
     <Compile Include="Admin.cs" />
+    <Compile Include="KickMe.cs" />
     <Compile Include="LOTD.cs" />
     <Compile Include="Puppet.cs" />
     <Compile Include="Rainbow.cs" />

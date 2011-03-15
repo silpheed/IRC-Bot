@@ -17,7 +17,6 @@ namespace Bot
 		//Admin user's nick + password, SHA1 hashed. See IsAuth() to make your own.
 		private string _saltedhash = "HASH_HERE";
 		
-
 		private bool _autojoin = false;
 
 		public Admin(IrcClient irc)

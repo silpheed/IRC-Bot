@@ -22,9 +22,11 @@ namespace Bot
 							new Big(_irc),
 							new Puppet(_irc),
 							new LOTD(_irc),
-							new EightBall(_irc)
+							new EightBall(_irc),
+							new KickMe(_irc)
 			           	};
 
+			_irc.ActiveChannelSyncing = true;
 			_irc.OnReadLine += OnReadLine;
 			_irc.SendDelay = 500;
 		}
